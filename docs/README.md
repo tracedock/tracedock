@@ -1,41 +1,87 @@
 # TraceDock
 
-## Introduction
+**TraceDock** is a highly extensible and minimalistic telemetry processor built to handle observability data based on user-defined rules.
 
-> :warning: This project is under active development, don't use it in production
+It aims to be an alternative to OpenTelemetry Collector distributions and offers an alternative for teams who need **fine-grained control** through **simple but powerful configurations**, **plugin support**, and it all provided in a **well documented** platform.
 
-**TraceDock** is an extensible, plugin-friendly alternative to the OpenTelemetry Collector.
+## Why TraceDock?
 
-Its main goal is to provide a flexible telemetry pipeline where you can extend its behavior via external `.so` modules, enabling easy extension, isolation, and rapid experimentation.
+Traditional observability pipelines are powerful but often:
 
-TraceDock works as a "dock" where telemetry data arrive, are inspected, processed, and routed to the desired destination.
+- Overly complex to configure
+- Are poor documented
+- Hard to customize at runtime
+- Limited in extensibility
 
-## Getting started
+**TraceDock** was created to solve these pain points with:
 
-### Requirements
+- Config-driven trace processing via YAML
+- Native plugin support via `.so` files
+- Simple CLI interface
+- Well documented features
 
-TraceDock is developed with Goland and requires the version 1.23+ of the language
+## Core Concepts
 
-### Installing
+| Concept      | Description                                                           |
+| ------------ | --------------------------------------------------------------------- |
+| **Routers**  | Conditions that defines what **Pipeline** will process a span.        |
+| **Pipeline** | Internal engine that applies **Rules** sequentially                   |
+| **Rules**    | YAML-defined filters and actions that dictate how spans are processed |
 
-You can run it using docker.
+A **Rule** can use a build-in provided feature in TraceDock or a feature provided by an external Plugin.
 
-```shell
-docker run -ti -v ./config/tracedock.yaml:/etc/tracedock/tracedock.yaml tracedock/tracedock server start --grpc-port=50051 --http-port=8080 -c /etc/tracedock/tracedock.yaml
+## Configuration example
+
+
+```yaml
+log:
+  level: INFO
+
+plugins:
+  folders: [/etc/trackdock/plugins]
+
+performance:
+  memory_limiter:
+    strategy: disk_dump
+    max_consumption: 4096m
+
+pipelines:
+- name: main
+  rules:
+
+  # discard all the spans with redis' HGETALL operations lasting less than 100ms
+  - provider: eraser
+    match:
+      attributes:
+        db.system: redis
+        db.statement: ^HGETALL.*
+      duration:
+        lt: 100ms
+
+  # set attribute http.route with the same value of http.target when the span 
+  # have the second one and its kind is server
+  - provider: setter
+    match:
+      attributes:
+        http.target: .*
+        kind: server
+    missing:
+      attributes: [http.route]
+    set:
+      http.route: ${attributes.http.target}
+
+  # set attribute name with the same value as http.target when the previous
+  # name is "HTTP [method]"
+  - provider: setter
+    match:
+      name: ^HTTP (GET|POST|PUT|DELETE|PATCH)$
+    set:
+      name: ${attributes.http.target}
+
+  # send the spans to jaeger via otlp/grpc 
+  - provider: export.otlp
+    config:
+      endpoint: https://jaeger.my.domain:4317
+      protocol: grpc
+      timeout: 1s
 ```
-
-Alternativelly, you can compile it on your own machine.
-
-```shell
-git clone https://github.com/tracedock/tracedock.git
-cd tracedock
-make build
-
-./tracedock server start --grpc-port=50051 --http-port=8080 -c /etc/tracedock/tracedock.yaml
-```
-
-### Configure
-
-> :warning: Sample configuration coming soon
-
-TraceDock uses YAML file to configure the pipelines and routing rules.
