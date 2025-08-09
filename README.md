@@ -34,8 +34,6 @@ make build
 ./tracedock server start --grpc-port=50051 --http-port=8080 -c /etc/tracedock/tracedock.yaml
 ```
 
-### Configure
+### Documentation
 
-> :warning: Sample configuration coming soon
-
-TraceDock uses YAML file to configure the pipelines and routing rules.
+Visit [https://tracedock.github.io/tracedock/](https://tracedock.github.io/tracedock/)
