@@ -27,3 +27,13 @@ go.work.sum
 
 # Compiled binaries
 /tracedock
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
