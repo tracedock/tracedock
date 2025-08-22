@@ -4,8 +4,8 @@ go 1.23.5
 
 require (
 	github.com/spf13/cobra v1.9.1
-	google.golang.org/protobuf v1.36.7
 	github.com/stretchr/testify v1.10.0
+	google.golang.org/protobuf v1.36.7
 )
 
 require (
@@ -14,6 +14,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
