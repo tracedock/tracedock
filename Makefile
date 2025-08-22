@@ -1,2 +1,3 @@
 build:
-	go build -o tracedock cmd/tracedock/main.go
+	mkdir -p _build/bin
+	go build -o _build/bin/tracedock cmd/tracedock/main.go
