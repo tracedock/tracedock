@@ -18,15 +18,18 @@ var (
 	ErrHTTPInvalidContentType = errors.New("invalid content type")
 )
 
+// HTTPServer implements Server interface for the HTTP protocol
 type HTTPServer struct {
 	httpServer    *http.Server
 	traceIngestor TraceIngestor
 }
 
+// NewHTTPServer creates a new HTTP server
 func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{}
 }
 
+// Start the HTTP server
 func (s *HTTPServer) Start(addr string) error {
 	if s.traceIngestor == nil {
 		return ErrNoIngestorRegistered
@@ -44,6 +47,7 @@ func (s *HTTPServer) Start(addr string) error {
 	return nil
 }
 
+// Stop the HTTP server
 func (s *HTTPServer) Stop() error {
 	background := context.Background()
 	ctx, cancel := context.WithTimeout(background, 5*time.Second)
@@ -52,6 +56,8 @@ func (s *HTTPServer) Stop() error {
 	return s.httpServer.Shutdown(ctx)
 }
 
+// RegisterTraceIngestor registers a TraceIngestor function that will process all the
+// incoming trace data
 func (s *HTTPServer) RegisterTraceIngestor(ingestor TraceIngestor) {
 	s.traceIngestor = ingestor
 }
