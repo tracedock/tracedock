@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
