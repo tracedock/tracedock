@@ -1,0 +1,8 @@
+inpackage: true
+log-level: info
+packages:
+  github.com/tracedock/tracedock:
+    config:
+      all: true
+      recursive: true
+      inpackage: true
