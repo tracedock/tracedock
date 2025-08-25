@@ -33,13 +33,12 @@ func NewGRPCServer() *GRPCServer {
 // to process incoming trace data
 func (s *GRPCServer) Export(ctx context.Context, req *tracecollectorv1.ExportTraceServiceRequest) (*tracecollectorv1.ExportTraceServiceResponse, error) {
 	if s.traceIngestor == nil {
-		return nil, status.Error(codes.Internal, "no trace ingestor registered")
+		return nil, ErrNoIngestorRegistered
 	}
 
-	for _, resourceSpan := range req.GetResourceSpans() {
-		if err := s.traceIngestor(resourceSpan); err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to ingest trace: %v", err)
-		}
+	if err := s.traceIngestor(req.GetResourceSpans()); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to ingest trace: %v", err)
+
 	}
 
 	return &tracecollectorv1.ExportTraceServiceResponse{}, nil
