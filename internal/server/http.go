@@ -68,7 +68,6 @@ func (s *HTTPServer) HandleRequest(w http.ResponseWriter, r *http.Request) {
 
 	if contentType != "application/x-protobuf" && contentType != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
-
 		return
 	}
 
