@@ -5,15 +5,6 @@ import (
 	"net/http"
 	"regexp"
 	"time"
-
-	"errors"
-)
-
-var (
-	ErrHTTPUnsupportedMethod  = errors.New("invalid HTTP method")
-	ErrHTTPNotFound           = errors.New("not found")
-	ErrHTTPUnsupported        = errors.New("unsupported content type")
-	ErrHTTPInvalidContentType = errors.New("invalid content type")
 )
 
 // HTTPServer implements Server interface for the HTTP protocol
