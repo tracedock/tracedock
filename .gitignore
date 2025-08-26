@@ -25,5 +25,17 @@ go.work.sum
 .idea/
 .vscode/
 
-# Compiled binaries
-/tracedock
+# Compiled binaries & GOPATH
+/_build
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+mocks_test.go

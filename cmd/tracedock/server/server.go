@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tracedock/tracedock/internal/server"
+
+	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
 var (
@@ -30,15 +33,34 @@ var ServerStartCmd = &cobra.Command{
 func init() {
 	ServerCmd.AddCommand(ServerStartCmd)
 
-	ServerStartCmd.PersistentFlags().StringVarP(&paramGRPCPort, "grpc-port", "", "4317", "tcp port for gRPC server")
-	ServerStartCmd.PersistentFlags().StringVarP(&paramHTTPPort, "http-port", "", "4318", "tcp port for HTTP server")
+	ServerStartCmd.PersistentFlags().StringVarP(&paramGRPCPort, "grpc-port", "", "0.0.0.0:4317", "tcp port for gRPC server")
+	ServerStartCmd.PersistentFlags().StringVarP(&paramHTTPPort, "http-port", "", "0.0.0.0:4318", "tcp port for HTTP server")
 	ServerStartCmd.PersistentFlags().StringVarP(&paramConfigFile, "config", "c", "/etc/tracedock.yaml", "path to the configuration file")
 }
 
 func execServerStartCmd(cmd *cobra.Command, args []string) {
-	fmt.Println("starting application with params")
-	fmt.Println()
-	fmt.Println("gRPC port:\t", paramGRPCPort)
-	fmt.Println("HTTP port:\t", paramHTTPPort)
-	fmt.Println("Config file:\t", paramConfigFile)
+	orchestrator := server.NewOrchestrator()
+
+	grpcServer := server.NewGRPCServer()
+	httpServer := server.NewHTTPServer()
+
+	orchestrator.Add(paramGRPCPort, grpcServer)
+	orchestrator.Add(paramHTTPPort, httpServer)
+
+	ingestor := func([]*trace.ResourceSpans) error {
+		return nil
+	}
+
+	grpcServer.RegisterTraceIngestor(ingestor)
+	httpServer.RegisterTraceIngestor(ingestor)
+
+	if err := orchestrator.Run(); err != nil {
+		fmt.Printf("Error starting orchestrator: %v\n", err)
+		return
+	}
+
+	if err := orchestrator.Wait(); err != nil {
+		fmt.Printf("Error waiting for orchestrator: %v\n", err)
+		return
+	}
 }
