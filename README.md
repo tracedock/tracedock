@@ -1,5 +1,7 @@
 # TraceDock
 
+![](https://github.com/tracedock/tracedock/actions/workflows/test.yaml/badge.svg?branch=main)
+
 ## Introduction
 
 > :warning: This project is under active development, don't use it in production
