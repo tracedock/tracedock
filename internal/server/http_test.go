@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -65,4 +66,56 @@ func Test_HTTPServer_Start(t *testing.T) {
 			assert.Equal(t, addr, server.httpServer.Addr)
 		}
 	})
+}
+
+func Test_HTTPServer_HandleRequest(t *testing.T) {
+	tests := []struct {
+		name           string
+		method         string
+		contentType    string
+		urlPath        string
+		expectedStatus int
+	}{
+		{
+			name:           "should return 415 for invalid content-type",
+			method:         "POST",
+			contentType:    "text/plain",
+			urlPath:        "/v1/traces",
+			expectedStatus: 415,
+		},
+		{
+			name:           "should return 405 for invalid method",
+			method:         "GET",
+			contentType:    "application/json",
+			urlPath:        "/v1/traces",
+			expectedStatus: 405,
+		},
+		{
+			name:           "should return 404 for inexistent path",
+			method:         "POST",
+			contentType:    "application/json",
+			urlPath:        "/v1/invalid",
+			expectedStatus: 404,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			server := NewHTTPServer()
+
+			server.RegisterTraceIngestor(func([]*trace.ResourceSpans) error { return nil })
+
+			req := httptest.NewRequest(tc.method, tc.urlPath, nil)
+			req.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			server.HandleRequest(w, req)
+
+			resp := w.Result()
+			defer resp.Body.Close()
+
+			assert.Equal(t, tc.expectedStatus, resp.StatusCode)
+			assert.Equal(t, tc.contentType, resp.Header.Get("Content-Type"))
+		})
+	}
 }
