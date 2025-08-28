@@ -17,8 +17,8 @@ var (
 
 var ServerCmd = &cobra.Command{
 	Use:   "server [flags]",
-	Short: "manages the tracedock server",
-	Long:  `manages the tracedock server`,
+	Short: "Manages the tracedock server",
+	Long:  `Manages the tracedock server`,
 	Args:  cobra.MinimumNArgs(1),
 }
 
