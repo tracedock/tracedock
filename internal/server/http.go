@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"regexp"
 	"time"
@@ -20,6 +21,8 @@ func NewHTTPServer() *HTTPServer {
 
 // Start the HTTP server
 func (s *HTTPServer) Start(addr string) error {
+	log.Printf("starting HTTP server at %s", addr)
+
 	if s.traceIngestor == nil {
 		return ErrNoIngestorRegistered
 	}

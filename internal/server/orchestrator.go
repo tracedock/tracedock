@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -71,6 +72,8 @@ func (o *Orchestrator) Run() error {
 
 // Wait blocks until an interrupt signal is received and stops all servers
 func (o *Orchestrator) Wait() error {
+	log.Print("application is running, try CTRL+C to stop")
+
 	var sigChan = make(chan os.Signal, 1)
 
 	if o.state != Running {

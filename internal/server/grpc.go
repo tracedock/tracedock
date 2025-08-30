@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net"
 
 	"google.golang.org/grpc"
@@ -46,6 +47,8 @@ func (s *GRPCServer) Export(ctx context.Context, req *tracecollectorv1.ExportTra
 
 // Start the gRPC server
 func (s *GRPCServer) Start(addr string) error {
+	log.Printf("starting gRPC server at %s", addr)
+
 	if s.traceIngestor == nil {
 		return ErrNoIngestorRegistered
 	}
