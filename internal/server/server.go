@@ -13,7 +13,7 @@ var (
 )
 
 // TraceIngestor is the function signature for processing trace data
-type TraceIngestor func([]*trace.ResourceSpans) error
+type TraceIngestor func(*trace.ResourceSpans) error
 
 // Server defines the interface for the trace server
 type Server interface {

@@ -2,12 +2,11 @@ package server
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	tracecollectorv1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
@@ -33,16 +32,19 @@ func NewGRPCServer() *GRPCServer {
 // Export implements the interface UnimplementedTraceServiceServer that allows it
 // to process incoming trace data
 func (s *GRPCServer) Export(ctx context.Context, req *tracecollectorv1.ExportTraceServiceRequest) (*tracecollectorv1.ExportTraceServiceResponse, error) {
+	var err error
+
 	if s.traceIngestor == nil {
 		return nil, ErrNoIngestorRegistered
 	}
 
-	if err := s.traceIngestor(req.GetResourceSpans()); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to ingest trace: %v", err)
-
+	for _, resource := range req.GetResourceSpans() {
+		if thisErr := s.traceIngestor(resource); err != nil {
+			err = errors.Join(err, thisErr)
+		}
 	}
 
-	return &tracecollectorv1.ExportTraceServiceResponse{}, nil
+	return &tracecollectorv1.ExportTraceServiceResponse{}, err
 }
 
 // Start the gRPC server

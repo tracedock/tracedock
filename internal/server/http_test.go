@@ -21,7 +21,7 @@ func Test_HTTPServer_Start(t *testing.T) {
 	t.Run("should return error when server fails to start", func(t *testing.T) {
 		var addr = "0.0.0.0:8080"
 
-		var ingestor = func(traces []*trace.ResourceSpans) error {
+		var ingestor = func(traces *trace.ResourceSpans) error {
 			return nil
 		}
 
@@ -41,7 +41,7 @@ func Test_HTTPServer_Start(t *testing.T) {
 
 		var done = make(chan error)
 
-		var ingestor = func([]*trace.ResourceSpans) error {
+		var ingestor = func(*trace.ResourceSpans) error {
 			return nil
 		}
 
@@ -103,7 +103,9 @@ func Test_HTTPServer_HandleRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			server := NewHTTPServer()
 
-			server.RegisterTraceIngestor(func([]*trace.ResourceSpans) error { return nil })
+			server.RegisterTraceIngestor(func(*trace.ResourceSpans) error {
+				return nil
+			})
 
 			req := httptest.NewRequest(tc.method, tc.urlPath, nil)
 			req.Header.Set("Content-Type", tc.contentType)
