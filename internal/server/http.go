@@ -1,11 +1,19 @@
 package server
 
 import (
+	"compress/gzip"
 	"context"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
+
+	prototrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	trace "go.opentelemetry.io/proto/otlp/trace/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 // HTTPServer implements Server interface for the HTTP protocol
@@ -60,11 +68,6 @@ func (s *HTTPServer) HandleRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", contentType)
 
-	if contentType != "application/x-protobuf" && contentType != "application/json" {
-		w.WriteHeader(http.StatusUnsupportedMediaType)
-		return
-	}
-
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -73,5 +76,75 @@ func (s *HTTPServer) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	if match, _ := regexp.MatchString("^/v1/traces(/)?$", r.URL.Path); !match {
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+
+	switch contentType {
+	case "application/json":
+		s.HandleRequestWithJSON(w, r)
+		return
+
+	case "application/x-protobuf":
+		s.HandleRequestWithProtobuf(w, r)
+		return
+
+	default:
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+}
+
+// HandleRequestWithJSON handles requests with content-type equals application/json
+func (s *HTTPServer) HandleRequestWithJSON(w http.ResponseWriter, r *http.Request) {
+	var resourceSpans trace.ResourceSpans
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := protojson.Unmarshal(reqBody, &resourceSpans); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := s.traceIngestor(&resourceSpans); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+// HandleRequestWithJSON handles requests with content-type equals application/protobuf
+func (s *HTTPServer) HandleRequestWithProtobuf(w http.ResponseWriter, r *http.Request) {
+	var reqBodyReader = r.Body
+	var resourceSpans prototrace.ExportTraceServiceRequest
+	var contentEncoding = r.Header.Get("Content-Encoding")
+
+	if strings.Contains(contentEncoding, "gzip") {
+		gzr, err := gzip.NewReader(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		defer gzr.Close()
+		reqBodyReader = gzr
+	}
+
+	reqBody, err := io.ReadAll(reqBodyReader)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := proto.Unmarshal(reqBody, &resourceSpans); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	for _, rs := range resourceSpans.ResourceSpans {
+		if err := s.traceIngestor(rs); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
