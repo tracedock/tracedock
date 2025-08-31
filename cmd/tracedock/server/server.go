@@ -48,7 +48,9 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	orchestrator.Add(paramGRPCPort, grpcServer)
 	orchestrator.Add(paramHTTPPort, httpServer)
 
-	ingestor := func(*trace.ResourceSpans) error {
+	ingestor := func(resource *trace.ResourceSpans) error {
+		log.Printf("hello from processor %#v", resource)
+
 		return nil
 	}
 
