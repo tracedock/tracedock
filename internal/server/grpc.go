@@ -46,7 +46,7 @@ func (s *GRPCServer) Export(ctx context.Context, req *tracecollectorv1.ExportTra
 	}
 
 	for _, resource := range req.GetResourceSpans() {
-		if thisErr := s.traceIngestor(resource); err != nil {
+		if thisErr := s.traceIngestor(resource); thisErr != nil {
 			err = errors.Join(err, thisErr)
 		}
 	}
