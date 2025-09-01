@@ -58,6 +58,10 @@ func (s *HTTPServer) Start(addr string) error {
 
 // Stop the HTTP server
 func (s *HTTPServer) Stop() error {
+	if s.httpServer == nil {
+		return nil
+	}
+
 	background := context.Background()
 	ctx, cancel := context.WithTimeout(background, 5*time.Second)
 
