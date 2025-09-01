@@ -49,7 +49,7 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	orchestrator.Add(paramHTTPPort, httpServer)
 
 	ingestor := func(resource *trace.ResourceSpans) error {
-		log.Printf("hello from processor %#v", resource)
+		log.Printf("received a resource with %d attributes", len(resource.Resource.Attributes))
 
 		return nil
 	}
