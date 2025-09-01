@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewOrchestrator(t *testing.T) {
-	t.Run("should correctly create a Orchestrator", func(t *testing.T) {
-		o := NewOrchestrator()
+func Test_NewSupervisor(t *testing.T) {
+	t.Run("should correctly create a Supervisor", func(t *testing.T) {
+		o := NewSupervisor()
 
 		assert.NotNil(t, o)
 		assert.Equal(t, Stopped, o.state)
@@ -21,25 +21,25 @@ func Test_NewOrchestrator(t *testing.T) {
 	})
 }
 
-func Test_Orchestrator_Add(t *testing.T) {
-	t.Run("should add servers to Orchestrator", func(t *testing.T) {
-		var orcht = NewOrchestrator()
+func Test_Supervisor_Add(t *testing.T) {
+	t.Run("should add servers to Supervisor", func(t *testing.T) {
+		var superv = NewSupervisor()
 		var addrs = []string{":7070", ":8080", ":9090"}
 
 		for i, addr := range addrs {
-			orcht.Add(addr, NewMockServer(t))
+			superv.Add(addr, NewMockServer(t))
 
-			assert.Len(t, orcht.servers, i+1)
+			assert.Len(t, superv.servers, i+1)
 		}
 
-		for key, val := range orcht.servers {
-			assert.Equal(t, val, orcht.servers[key])
+		for key, val := range superv.servers {
+			assert.Equal(t, val, superv.servers[key])
 		}
 	})
 
 }
 
-func Test_Orchestrator_Run(t *testing.T) {
+func Test_Supervisor_Run(t *testing.T) {
 	tests := []struct {
 		name          string
 		currentState  State
@@ -72,7 +72,7 @@ func Test_Orchestrator_Run(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := NewOrchestrator()
+			o := NewSupervisor()
 
 			for _, addr := range tt.servers {
 				mockServer := NewMockServer(t)
@@ -90,9 +90,9 @@ func Test_Orchestrator_Run(t *testing.T) {
 	}
 }
 
-func Test_Orchestrator_Wait(t *testing.T) {
+func Test_Supervisor_Wait(t *testing.T) {
 	t.Run("returns error when not running", func(t *testing.T) {
-		o := NewOrchestrator()
+		o := NewSupervisor()
 
 		err := o.Wait()
 
@@ -102,7 +102,7 @@ func Test_Orchestrator_Wait(t *testing.T) {
 	})
 
 	t.Run("stops servers and sets state to stopped", func(t *testing.T) {
-		o := NewOrchestrator()
+		o := NewSupervisor()
 		mockServer1 := NewMockServer(t)
 		mockServer2 := NewMockServer(t)
 		addr1 := ":8080"
@@ -135,7 +135,7 @@ func Test_Orchestrator_Wait(t *testing.T) {
 	})
 
 	t.Run("returns error when server stop fails", func(t *testing.T) {
-		o := NewOrchestrator()
+		o := NewSupervisor()
 		mockServer := NewMockServer(t)
 		addr := ":8080"
 		expectedError := errors.New("stop error")

@@ -9,11 +9,11 @@ import (
 )
 
 // State is used to control the current
-// state of the Orchestrator
+// state of the Supervisor
 type State int
 
-// Orchestrator manages the lifecycle of multiple servers
-type Orchestrator struct {
+// Supervisor manages the lifecycle of multiple servers
+type Supervisor struct {
 	state   State
 	servers map[string]Server
 }
@@ -25,30 +25,30 @@ const (
 
 var (
 	// ErrNotRunning is returned when is some operation that requires
-	// the orchestrator to be running but it isn't
-	ErrNotRunning = errors.New("orchestrator is not running")
+	// the supervisor to be running but it isn't
+	ErrNotRunning = errors.New("supervisor is not running")
 
 	// ErrAlreadyRunning is returned when an operation is attempted
-	// on the orchestrator while it is already running
-	ErrAlreadyRunning = errors.New("orchestrator is already running")
+	// on the supervisor while it is already running
+	ErrAlreadyRunning = errors.New("supervisor is already running")
 
 	// ErrEmptyServerList is returned when there are no servers to start
 	// but we try to start anyway
 	ErrEmptyServerList = errors.New("no servers to start")
 )
 
-// NewOrchestrator creates a new Orchestrator instance
-func NewOrchestrator() *Orchestrator {
-	return &Orchestrator{state: Stopped, servers: make(map[string]Server)}
+// NewSupervisor creates a new Supervisor instance
+func NewSupervisor() *Supervisor {
+	return &Supervisor{state: Stopped, servers: make(map[string]Server)}
 }
 
 // Add maps a server to run on the given address
-func (o *Orchestrator) Add(addr string, s Server) {
+func (o *Supervisor) Add(addr string, s Server) {
 	o.servers[addr] = s
 }
 
-// Run starts all the servers managed by the Orchestrator
-func (o *Orchestrator) Run() error {
+// Run starts all the servers managed by the Supervisor
+func (o *Supervisor) Run() error {
 	if o.state == Running {
 		return ErrAlreadyRunning
 	}
@@ -71,7 +71,7 @@ func (o *Orchestrator) Run() error {
 }
 
 // Wait blocks until an interrupt signal is received and stops all servers
-func (o *Orchestrator) Wait() error {
+func (o *Supervisor) Wait() error {
 	log.Print("application is running, try CTRL+C to stop")
 
 	var sigChan = make(chan os.Signal, 1)

@@ -40,13 +40,13 @@ func init() {
 }
 
 func execServerStartCmd(cmd *cobra.Command, args []string) {
-	orchestrator := server.NewOrchestrator()
+	supervisor := server.NewSupervisor()
 
 	grpcServer := server.NewGRPCServer()
 	httpServer := server.NewHTTPServer()
 
-	orchestrator.Add(paramGRPCPort, grpcServer)
-	orchestrator.Add(paramHTTPPort, httpServer)
+	supervisor.Add(paramGRPCPort, grpcServer)
+	supervisor.Add(paramHTTPPort, httpServer)
 
 	ingestor := func(resource *trace.ResourceSpans) error {
 		log.Printf("received a resource with %d attributes", len(resource.Resource.Attributes))
@@ -57,15 +57,15 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	grpcServer.RegisterTraceIngestor(ingestor)
 	httpServer.RegisterTraceIngestor(ingestor)
 
-	if err := orchestrator.Run(); err != nil {
-		log.Printf("error starting orchestrator: %v", err)
+	if err := supervisor.Run(); err != nil {
+		log.Printf("error starting supervisor: %v", err)
 		return
 	}
 
 	time.Sleep(10 * time.Millisecond)
 
-	if err := orchestrator.Wait(); err != nil {
-		log.Printf("error waiting for orchestrator: %v", err)
+	if err := supervisor.Wait(); err != nil {
+		log.Printf("error waiting for supervisor: %v", err)
 		return
 	}
 }
