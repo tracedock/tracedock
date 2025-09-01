@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/tracedock/tracedock/cmd/tracedock/server"
+	"github.com/tracedock/tracedock/cmd/tracedock/version"
 )
 
 var rootCmd = &cobra.Command{
@@ -18,6 +19,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(server.ServerCmd)
+	rootCmd.AddCommand(version.VersionCmd)
 }
 
 func main() {
