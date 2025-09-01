@@ -12,6 +12,13 @@ import (
 )
 
 // GRPCServer implements Server interface for the gRPC protocol
+//
+// Notice: It isn't implementing 100% of the OpenTelemetry HTTP specification
+// regarding to the responses content.
+//
+// This behaviour wasn't tested yet.
+//
+// For more details: https://opentelemetry.io/docs/specs/otlp/#otlpgrpc-response
 type GRPCServer struct {
 	server        *grpc.Server
 	traceIngestor TraceIngestor

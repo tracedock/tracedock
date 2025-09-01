@@ -17,6 +17,15 @@ import (
 )
 
 // HTTPServer implements Server interface for the HTTP protocol
+//
+// Notice: It isn't implementing 100% of the OpenTelemetry HTTP specification
+// regarding to the responses bodies, instead, for now it only respond with
+// correct status code without any response bodies.
+//
+// This behaviour was tested with Ruby and Python OpenTelemetry SDKs and worked
+// with no issues.
+//
+// For more details: https://opentelemetry.io/docs/specs/otlp/#otlphttp-response
 type HTTPServer struct {
 	httpServer    *http.Server
 	traceIngestor TraceIngestor
