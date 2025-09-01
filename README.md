@@ -1,5 +1,7 @@
 # TraceDock
 
+![](https://github.com/tracedock/tracedock/actions/workflows/test.yaml/badge.svg?branch=main)
+
 ## Introduction
 
 > :warning: This project is under active development, don't use it in production
@@ -14,7 +16,7 @@ TraceDock works as a "dock" where telemetry data arrive, are inspected, processe
 
 ### Requirements
 
-TraceDock is developed with Golang and requires the version 1.23+ of the language
+TraceDock is developed with Golang and requires the version 1.24+ of the language
 
 ### Installing
 
