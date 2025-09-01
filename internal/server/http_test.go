@@ -10,23 +10,30 @@ import (
 	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
+var addr string = "0.0.0.0:8080"
+
+var ingestor = func(traces *trace.ResourceSpans) error {
+	return nil
+}
+
 func Test_HTTPServer_Start(t *testing.T) {
 	t.Run("should return error when no ingestor is registered", func(t *testing.T) {
-		err := NewHTTPServer().Start(":8080")
+		server := NewHTTPServer()
 
-		assert.Error(t, err)
-		assert.Equal(t, ErrNoIngestorRegistered, err)
+		t.Cleanup(func() {
+			server.Stop()
+		})
+
+		assert.Equal(t, ErrNoIngestorRegistered, server.Start(addr))
 	})
 
 	t.Run("should return error when server fails to start", func(t *testing.T) {
-		var addr = "0.0.0.0:8080"
-
-		var ingestor = func(traces []*trace.ResourceSpans) error {
-			return nil
-		}
-
 		server := NewHTTPServer()
 		server.RegisterTraceIngestor(ingestor)
+
+		t.Cleanup(func() {
+			server.Stop()
+		})
 
 		go func() { server.Start(addr) }()
 
@@ -37,16 +44,15 @@ func Test_HTTPServer_Start(t *testing.T) {
 	})
 
 	t.Run("should start server successfully when ingestor is registered", func(t *testing.T) {
-		var addr = "0.0.0.0:8080"
-
 		var done = make(chan error)
-
-		var ingestor = func([]*trace.ResourceSpans) error {
-			return nil
-		}
+		var addr string = "0.0.0.0:0"
 
 		server := NewHTTPServer()
 		server.RegisterTraceIngestor(ingestor)
+
+		t.Cleanup(func() {
+			server.Stop()
+		})
 
 		go func() {
 			time.Sleep(100 * time.Millisecond)
@@ -61,7 +67,7 @@ func Test_HTTPServer_Start(t *testing.T) {
 			// failed to start so it should fail anyway
 			assert.NoError(t, err)
 
-		case <-time.After(100 * time.Millisecond):
+		case <-time.After(150 * time.Millisecond):
 			server.Stop()
 			assert.Equal(t, addr, server.httpServer.Addr)
 		}
@@ -103,7 +109,9 @@ func Test_HTTPServer_HandleRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			server := NewHTTPServer()
 
-			server.RegisterTraceIngestor(func([]*trace.ResourceSpans) error { return nil })
+			server.RegisterTraceIngestor(func(*trace.ResourceSpans) error {
+				return nil
+			})
 
 			req := httptest.NewRequest(tc.method, tc.urlPath, nil)
 			req.Header.Set("Content-Type", tc.contentType)

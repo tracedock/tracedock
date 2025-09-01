@@ -1,7 +1,8 @@
 package server
 
 import (
-	"fmt"
+	"log"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/tracedock/tracedock/internal/server"
@@ -47,7 +48,9 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	orchestrator.Add(paramGRPCPort, grpcServer)
 	orchestrator.Add(paramHTTPPort, httpServer)
 
-	ingestor := func([]*trace.ResourceSpans) error {
+	ingestor := func(resource *trace.ResourceSpans) error {
+		log.Printf("received a resource with %d attributes", len(resource.Resource.Attributes))
+
 		return nil
 	}
 
@@ -55,12 +58,14 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	httpServer.RegisterTraceIngestor(ingestor)
 
 	if err := orchestrator.Run(); err != nil {
-		fmt.Printf("Error starting orchestrator: %v\n", err)
+		log.Printf("error starting orchestrator: %v", err)
 		return
 	}
 
+	time.Sleep(10 * time.Millisecond)
+
 	if err := orchestrator.Wait(); err != nil {
-		fmt.Printf("Error waiting for orchestrator: %v\n", err)
+		log.Printf("error waiting for orchestrator: %v", err)
 		return
 	}
 }

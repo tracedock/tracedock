@@ -17,7 +17,7 @@ func TestNewGRPCServer(t *testing.T) {
 	assert.NotNil(t, server.server)
 }
 
-func TestGRPCServer_Start(t *testing.T) {
+func Test_GRPCServer_Start(t *testing.T) {
 	t.Run("should return error when no ingestor is registered", func(t *testing.T) {
 		server := NewGRPCServer()
 		err := server.Start(":8080")
@@ -30,7 +30,7 @@ func TestGRPCServer_Start(t *testing.T) {
 		var addr = "0.0.0.0:8081"
 		var done = make(chan error)
 
-		var ingestor = func([]*trace.ResourceSpans) error { return nil }
+		var ingestor = func(*trace.ResourceSpans) error { return nil }
 
 		server := NewGRPCServer()
 		server.RegisterTraceIngestor(ingestor)
@@ -51,7 +51,7 @@ func TestGRPCServer_Start(t *testing.T) {
 	})
 }
 
-func TestGRPCServer_Export(t *testing.T) {
+func Test_GRPCServer_Export(t *testing.T) {
 	t.Run("should return error when no ingestor is registered", func(t *testing.T) {
 		server := NewGRPCServer()
 
@@ -68,8 +68,8 @@ func TestGRPCServer_Export(t *testing.T) {
 	t.Run("should process traces successfully", func(t *testing.T) {
 		var processedTraces []*trace.ResourceSpans
 
-		ingestor := func(resource []*trace.ResourceSpans) error {
-			processedTraces = append(processedTraces, resource...)
+		ingestor := func(resource *trace.ResourceSpans) error {
+			processedTraces = append(processedTraces, resource)
 			return nil
 		}
 
@@ -91,7 +91,7 @@ func TestGRPCServer_Export(t *testing.T) {
 	})
 
 	t.Run("should return error when ingestor fails", func(t *testing.T) {
-		ingestor := func(resource []*trace.ResourceSpans) error {
+		ingestor := func(resource *trace.ResourceSpans) error {
 			return assert.AnError
 		}
 
