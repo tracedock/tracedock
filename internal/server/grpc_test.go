@@ -17,7 +17,7 @@ func TestNewGRPCServer(t *testing.T) {
 	assert.NotNil(t, server.server)
 }
 
-func TestGRPCServer_Start(t *testing.T) {
+func Test_GRPCServer_Start(t *testing.T) {
 	t.Run("should return error when no ingestor is registered", func(t *testing.T) {
 		server := NewGRPCServer()
 		err := server.Start(":8080")
@@ -51,7 +51,7 @@ func TestGRPCServer_Start(t *testing.T) {
 	})
 }
 
-func TestGRPCServer_Export(t *testing.T) {
+func Test_GRPCServer_Export(t *testing.T) {
 	t.Run("should return error when no ingestor is registered", func(t *testing.T) {
 		server := NewGRPCServer()
 
