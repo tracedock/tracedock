@@ -12,3 +12,6 @@ test:
 
 coverage: test
 	go tool cover -html=cover.out
+
+make develop:
+	air --build.cmd "make build" --build.bin _build/bin/tracedock server start --config config/tracedock.yaml
