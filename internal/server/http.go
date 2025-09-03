@@ -3,13 +3,14 @@ package server
 import (
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/tracedock/tracedock/internal/logger"
 	prototrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -38,7 +39,7 @@ func NewHTTPServer() *HTTPServer {
 
 // Start the HTTP server
 func (s *HTTPServer) Start(addr string) error {
-	log.Printf("starting HTTP server at %s", addr)
+	logger.Info(fmt.Sprintf("starting HTTP server at %s", addr))
 
 	if s.traceIngestor == nil {
 		return ErrNoIngestorRegistered

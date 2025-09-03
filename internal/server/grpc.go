@@ -3,9 +3,10 @@ package server
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"net"
 
+	"github.com/tracedock/tracedock/internal/logger"
 	"google.golang.org/grpc"
 
 	tracecollectorv1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
@@ -56,7 +57,7 @@ func (s *GRPCServer) Export(ctx context.Context, req *tracecollectorv1.ExportTra
 
 // Start the gRPC server
 func (s *GRPCServer) Start(addr string) error {
-	log.Printf("starting gRPC server at %s", addr)
+	logger.Info(fmt.Sprintf("starting gRPC server at %s", addr))
 
 	if s.traceIngestor == nil {
 		return ErrNoIngestorRegistered

@@ -1,10 +1,11 @@
 package server
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tracedock/tracedock/internal/logger"
 	"github.com/tracedock/tracedock/internal/server"
 
 	trace "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -49,7 +50,7 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	supervisor.Add(paramHTTPPort, httpServer)
 
 	ingestor := func(resource *trace.ResourceSpans) error {
-		log.Printf("received a resource with %d attributes", len(resource.Resource.Attributes))
+		logger.Error(fmt.Sprintf("received a resource with %d attributes", len(resource.Resource.Attributes)))
 
 		return nil
 	}
@@ -58,14 +59,14 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 	httpServer.RegisterTraceIngestor(ingestor)
 
 	if err := supervisor.Run(); err != nil {
-		log.Printf("error starting supervisor: %v", err)
+		logger.Error(fmt.Sprintf("error starting supervisor: %v", err))
 		return
 	}
 
 	time.Sleep(10 * time.Millisecond)
 
 	if err := supervisor.Wait(); err != nil {
-		log.Printf("error waiting for supervisor: %v", err)
+		logger.Error(fmt.Sprintf("error waiting for supervisor: %v", err))
 		return
 	}
 }

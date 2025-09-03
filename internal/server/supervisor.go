@@ -2,10 +2,11 @@ package server
 
 import (
 	"errors"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/tracedock/tracedock/internal/logger"
 )
 
 // State is used to control the current
@@ -72,7 +73,7 @@ func (o *Supervisor) Run() error {
 
 // Wait blocks until an interrupt signal is received and stops all servers
 func (o *Supervisor) Wait() error {
-	log.Print("application is running, try CTRL+C to stop")
+	logger.Info("application is running, try CTRL+C to stop")
 
 	var sigChan = make(chan os.Signal, 1)
 
