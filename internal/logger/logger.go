@@ -7,7 +7,7 @@ import (
 var zaplog *zap.Logger
 
 func init() {
-	zaplog = zap.Must(zap.NewProduction())
+	zaplog = zap.Must(zap.NewDevelopment())
 }
 
 func Info(msg string) {
