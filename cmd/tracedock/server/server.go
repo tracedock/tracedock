@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tracedock/tracedock/internal/config"
 	"github.com/tracedock/tracedock/internal/logger"
+	"github.com/tracedock/tracedock/internal/orchestrator"
 	"github.com/tracedock/tracedock/internal/server"
-
-	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
 var (
@@ -41,22 +41,23 @@ func init() {
 }
 
 func execServerStartCmd(cmd *cobra.Command, args []string) {
-	supervisor := server.NewSupervisor()
+	cfg := config.NewConfig()
+	if err := cfg.Load(paramConfigFile); err != nil {
+		logger.Error(fmt.Sprintf("error loading config file: %v", err))
+		return
+	}
 
+	orchestrator := orchestrator.NewIngestor(cfg)
+
+	supervisor := server.NewSupervisor()
 	grpcServer := server.NewGRPCServer()
 	httpServer := server.NewHTTPServer()
 
 	supervisor.Add(paramGRPCPort, grpcServer)
 	supervisor.Add(paramHTTPPort, httpServer)
 
-	ingestor := func(resource *trace.ResourceSpans) error {
-		logger.Error(fmt.Sprintf("received a resource with %d attributes", len(resource.Resource.Attributes)))
-
-		return nil
-	}
-
-	grpcServer.RegisterTraceIngestor(ingestor)
-	httpServer.RegisterTraceIngestor(ingestor)
+	grpcServer.RegisterTraceIngestor(orchestrator.IngestTrace)
+	httpServer.RegisterTraceIngestor(orchestrator.IngestTrace)
 
 	if err := supervisor.Run(); err != nil {
 		logger.Error(fmt.Sprintf("error starting supervisor: %v", err))
