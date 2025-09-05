@@ -39,3 +39,5 @@ devenv.local.nix
 .pre-commit-config.yaml
 
 mocks_test.go
+
+tmp/*

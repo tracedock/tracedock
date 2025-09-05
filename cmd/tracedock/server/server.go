@@ -1,13 +1,14 @@
 package server
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tracedock/tracedock/internal/config"
+	"github.com/tracedock/tracedock/internal/logger"
+	"github.com/tracedock/tracedock/internal/orchestrator"
 	"github.com/tracedock/tracedock/internal/server"
-
-	trace "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
 var (
@@ -40,32 +41,33 @@ func init() {
 }
 
 func execServerStartCmd(cmd *cobra.Command, args []string) {
-	orchestrator := server.NewOrchestrator()
+	cfg := config.NewConfig()
+	if err := cfg.Load(paramConfigFile); err != nil {
+		logger.Error(fmt.Sprintf("error loading config file: %v", err))
+		return
+	}
 
+	orchestrator := orchestrator.NewIngestor(cfg)
+
+	supervisor := server.NewSupervisor()
 	grpcServer := server.NewGRPCServer()
 	httpServer := server.NewHTTPServer()
 
-	orchestrator.Add(paramGRPCPort, grpcServer)
-	orchestrator.Add(paramHTTPPort, httpServer)
+	supervisor.Add(paramGRPCPort, grpcServer)
+	supervisor.Add(paramHTTPPort, httpServer)
 
-	ingestor := func(resource *trace.ResourceSpans) error {
-		log.Printf("received a resource with %d attributes", len(resource.Resource.Attributes))
+	grpcServer.RegisterTraceIngestor(orchestrator.IngestTrace)
+	httpServer.RegisterTraceIngestor(orchestrator.IngestTrace)
 
-		return nil
-	}
-
-	grpcServer.RegisterTraceIngestor(ingestor)
-	httpServer.RegisterTraceIngestor(ingestor)
-
-	if err := orchestrator.Run(); err != nil {
-		log.Printf("error starting orchestrator: %v", err)
+	if err := supervisor.Run(); err != nil {
+		logger.Error(fmt.Sprintf("error starting supervisor: %v", err))
 		return
 	}
 
 	time.Sleep(10 * time.Millisecond)
 
-	if err := orchestrator.Wait(); err != nil {
-		log.Printf("error waiting for orchestrator: %v", err)
+	if err := supervisor.Wait(); err != nil {
+		logger.Error(fmt.Sprintf("error waiting for supervisor: %v", err))
 		return
 	}
 }
