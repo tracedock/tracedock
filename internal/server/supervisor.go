@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -58,11 +59,11 @@ func (o *Supervisor) Run() error {
 		return ErrEmptyServerList
 	}
 
-	err := make(chan error)
-
 	for addr, srv := range o.servers {
 		go func() {
-			err <- srv.Start(addr)
+			if err := srv.Start(addr); err != nil {
+				logger.Error(fmt.Sprintf("error starting server: %v", err))
+			}
 		}()
 	}
 
