@@ -14,12 +14,6 @@ import (
 // state of the Supervisor
 type State int
 
-// Supervisor manages the lifecycle of multiple servers
-type Supervisor struct {
-	state   State
-	servers map[string]Server
-}
-
 const (
 	Stopped State = iota
 	Running
@@ -38,6 +32,12 @@ var (
 	// but we try to start anyway
 	ErrEmptyServerList = errors.New("no servers to start")
 )
+
+// Supervisor manages the lifecycle of multiple servers
+type Supervisor struct {
+	state   State
+	servers map[string]Server
+}
 
 // NewSupervisor creates a new Supervisor instance
 func NewSupervisor() *Supervisor {
