@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,12 +13,6 @@ import (
 // State is used to control the current
 // state of the Supervisor
 type State int
-
-// Supervisor manages the lifecycle of multiple servers
-type Supervisor struct {
-	state   State
-	servers map[string]Server
-}
 
 const (
 	Stopped State = iota
@@ -37,6 +32,12 @@ var (
 	// but we try to start anyway
 	ErrEmptyServerList = errors.New("no servers to start")
 )
+
+// Supervisor manages the lifecycle of multiple servers
+type Supervisor struct {
+	state   State
+	servers map[string]Server
+}
 
 // NewSupervisor creates a new Supervisor instance
 func NewSupervisor() *Supervisor {
@@ -58,11 +59,11 @@ func (o *Supervisor) Run() error {
 		return ErrEmptyServerList
 	}
 
-	err := make(chan error)
-
 	for addr, srv := range o.servers {
 		go func() {
-			err <- srv.Start(addr)
+			if err := srv.Start(addr); err != nil {
+				logger.Error(fmt.Sprintf("error starting server: %v", err))
+			}
 		}()
 	}
 
