@@ -7,15 +7,19 @@ import (
 var zaplog *zap.Logger
 
 func init() {
-	zaplog = zap.Must(zap.NewDevelopment())
+	zaplog = zap.Must(zap.NewProduction())
+}
+
+func Debug(msg string) {
+	zaplog.Debug(msg)
 }
 
 func Info(msg string) {
 	zaplog.Info(msg)
 }
 
-func Debug(msg string) {
-	zaplog.Debug(msg)
+func Warn(msg string) {
+	zaplog.Warn(msg)
 }
 
 func Error(msg string) {

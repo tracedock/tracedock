@@ -7,10 +7,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tracedock/tracedock/internal/config"
+	"github.com/tracedock/tracedock/internal/storage"
 )
 
 func Test_Ingestor_IngestTrace(t *testing.T) {
-	var ingestor = NewIngestor(config.NewConfig())
+	var ingestor = NewIngestor(config.NewConfig(), storage.NewQueue())
 
 	t.Run("should handle nil ResourceSpans", func(t *testing.T) {
 		var rs *trace.ResourceSpans

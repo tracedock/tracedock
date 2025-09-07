@@ -9,6 +9,7 @@ import (
 	"github.com/tracedock/tracedock/internal/logger"
 	"github.com/tracedock/tracedock/internal/orchestrator"
 	"github.com/tracedock/tracedock/internal/server"
+	"github.com/tracedock/tracedock/internal/storage"
 )
 
 var (
@@ -47,7 +48,9 @@ func execServerStartCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	orchestrator := orchestrator.NewIngestor(cfg)
+	queue := storage.NewQueue()
+
+	orchestrator := orchestrator.NewIngestor(cfg, queue)
 
 	supervisor := server.NewSupervisor()
 	grpcServer := server.NewGRPCServer()

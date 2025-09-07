@@ -7,14 +7,16 @@ import (
 
 	"github.com/tracedock/tracedock/internal/config"
 	"github.com/tracedock/tracedock/internal/logger"
+	"github.com/tracedock/tracedock/internal/storage"
 )
 
 type Ingestor struct {
 	Config *config.Config
+	Queue  *storage.Queue
 }
 
-func NewIngestor(config *config.Config) *Ingestor {
-	return &Ingestor{config}
+func NewIngestor(config *config.Config, queue *storage.Queue) *Ingestor {
+	return &Ingestor{config, queue}
 }
 
 func (i *Ingestor) IngestTrace(rs *trace.ResourceSpans) error {
@@ -22,12 +24,6 @@ func (i *Ingestor) IngestTrace(rs *trace.ResourceSpans) error {
 		return nil
 	}
 
-	totalSpans := 0
-	for _, ss := range rs.ScopeSpans {
-		totalSpans += len(ss.Spans)
-	}
-
-	logger.Debug(fmt.Sprintf("trace with %d spans ingested", totalSpans))
-
-	return nil
+	logger.Info(fmt.Sprintf("enqueuing resource span with %#v scope spans", len(rs.ScopeSpans)))
+	return i.Queue.Enqueue(rs)
 }
