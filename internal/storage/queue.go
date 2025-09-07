@@ -16,11 +16,13 @@ func NewQueue() *Queue {
 }
 
 // Enqueue a telemetry item to the queue
-func (q *Queue) Enqueue(item any) {
+func (q *Queue) Enqueue(item any) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	q.items = append(q.items, item)
+
+	return nil
 }
 
 // Dequeue a telemetry item from the queue

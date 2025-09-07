@@ -24,8 +24,7 @@ func Test_Queue_Enqueue(t *testing.T) {
 		assert.Equal(t, 0, len(queue.items))
 
 		for i := 1; i < 100; i++ {
-			queue.Enqueue(i)
-
+			assert.NoError(t, queue.Enqueue(i))
 			assert.Equal(t, i, len(queue.items))
 		}
 	})
@@ -42,7 +41,7 @@ func Test_Queue_Enqueue(t *testing.T) {
 				defer wg.Done()
 
 				for j := 0; j < enqueues; j++ {
-					queue.Enqueue(rand.Int())
+					assert.NoError(t, queue.Enqueue(rand.Int()))
 				}
 			}()
 		}
@@ -68,7 +67,7 @@ func Test_Queue_Dequeue(t *testing.T) {
 		var queue = NewQueue()
 
 		for i := 1; i <= items; i++ {
-			queue.Enqueue(i)
+			assert.NoError(t, queue.Enqueue(i))
 		}
 
 		for i := items; i == 0; i-- {
@@ -85,7 +84,9 @@ func Test_Queue_Dequeue(t *testing.T) {
 		var dequeued = make(map[string]bool)
 
 		for i := 0; i < enqueues; i++ {
-			queue.Enqueue(fmt.Sprintf("%v", i))
+			assert.NoError(t,
+				queue.Enqueue(fmt.Sprintf("%v", i)),
+			)
 		}
 
 		wg.Add(enqueues)
