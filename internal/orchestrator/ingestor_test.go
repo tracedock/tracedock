@@ -1,6 +1,8 @@
 package orchestrator
 
 import (
+	"errors"
+	"math/rand"
 	"testing"
 
 	trace "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -25,5 +27,17 @@ func Test_Ingestor_IngestTrace(t *testing.T) {
 		}
 
 		assert.NoError(t, ingestor.IngestTrace(rs))
+	})
+
+	t.Run("should return error when enqueue returns error", func(t *testing.T) {
+		var queue = NewMockQueue(t)
+		var ingestor = NewIngestor(config.NewConfig(), storage.NewQueue())
+
+		var item = rand.Int()
+		var err = errors.New("")
+
+		queue.EXPECT().Enqueue(item).Return(err)
+
+		assert.Equal(t, err, ingestor.Queue.Enqueue(item))
 	})
 }

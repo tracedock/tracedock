@@ -7,15 +7,19 @@ import (
 
 	"github.com/tracedock/tracedock/internal/config"
 	"github.com/tracedock/tracedock/internal/logger"
-	"github.com/tracedock/tracedock/internal/storage"
 )
+
+type Queue interface {
+	Enqueue(any) error
+	Dequeue() any
+}
 
 type Ingestor struct {
 	Config *config.Config
-	Queue  *storage.Queue
+	Queue  Queue
 }
 
-func NewIngestor(config *config.Config, queue *storage.Queue) *Ingestor {
+func NewIngestor(config *config.Config, queue Queue) *Ingestor {
 	return &Ingestor{config, queue}
 }
 
